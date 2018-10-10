@@ -1,5 +1,5 @@
 {
-    "name": "smtpEmail/smtp-validate-email",
+    "name": "smtp-email/smtp-validate-email",
     "description": "try make a composer package",
     "type": "library",
     "license": "MIT",
