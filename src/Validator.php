@@ -79,7 +79,7 @@ class Validator
     protected $command_timeouts = [
         'ehlo' => 120,
         'helo' => 120,
-        'tls' => 180, // start tls
+        'tls'  => 180, // start tls
         'mail' => 300, // mail from
         'rcpt' => 300, // rcpt to,
         'rset' => 30,
@@ -91,10 +91,10 @@ class Validator
 
     // Some smtp response codes
     const SMTP_CONNECT_SUCCESS = 220;
-    const SMTP_QUIT_SUCCESS = 221;
+    const SMTP_QUIT_SUCCESS    = 221;
     const SMTP_GENERIC_SUCCESS = 250;
-    const SMTP_USER_NOT_LOCAL = 251;
-    const SMTP_CANNOT_VRFY = 252;
+    const SMTP_USER_NOT_LOCAL  = 251;
+    const SMTP_CANNOT_VRFY     = 252;
 
     const SMTP_SERVICE_UNAVAILABLE = 421;
 
@@ -224,7 +224,7 @@ class Validator
             return false;
         }
 
-        $test = 'catch-all-test-' . time();
+        $test     = 'catch-all-test-' . time();
         $accepted = $this->rcpt($test . '@' . $domain);
         if ($accepted) {
             // Success on a non-existing address is a "catch-all"
@@ -272,17 +272,17 @@ class Validator
 
         // Query the MTAs on each domain if we have them
         foreach ($this->domains as $domain => $users) {
-            $mxsJson = $redis::HGET("mailsys:mail_white", $domain);
-            $mxsArr = json_decode($mxsJson, true);
+            $mxsJson = $redis::HGET("mailsys:mail_white",$domain);
+            $mxsArr = json_decode($mxsJson,true);
             $mxs = $mxsArr['mxrr'];
             $mxs[] = $domain;
 
             asort($mxs);
 
             $this->debug('MX records (' . $domain . '): ' . print_r($mxs, true));
-            $this->domains_info[$domain] = [];
+            $this->domains_info[$domain]          = [];
             $this->domains_info[$domain]['users'] = $users;
-            $this->domains_info[$domain]['mxs'] = $mxs;
+            $this->domains_info[$domain]['mxs']   = $mxs;
             // Try each host, $_weight unused in the foreach body, but array_keys() doesn't guarantee the order
             foreach ($mxs as $host) {
                 // try connecting to the remote host
@@ -318,7 +318,7 @@ class Validator
                             $this->noop();
                             // RCPT for each user
                             foreach ($users as $user) {
-                                $address = $user . '@' . $domain;
+                                $address                 = $user . '@' . $domain;
                                 $this->results[$address] = $this->rcpt($address);
                                 $this->noop();
                             }
@@ -399,22 +399,21 @@ class Validator
     protected function connect($host)
     {
         $remote_socket = $host . ':' . $this->connect_port;
-        $errnum = 0;
-        $errstr = '';
-        $this->host = $remote_socket;
+        $errnum        = 0;
+        $errstr        = '';
+        $this->host    = $remote_socket;
 
         // Open connection
         $this->debug('Connecting to ' . $this->host);
         // @codingStandardsIgnoreLine
-        $this->socket = /** @scrutinizer ignore-unhandled */
-            @stream_socket_client(
-                $this->host,
-                $errnum,
-                $errstr,
-                $this->connect_timeout,
-                STREAM_CLIENT_CONNECT,
-                stream_context_create([])
-            );
+        $this->socket = /** @scrutinizer ignore-unhandled */ @stream_socket_client(
+            $this->host,
+            $errnum,
+            $errstr,
+            $this->connect_timeout,
+            STREAM_CLIENT_CONNECT,
+            stream_context_create([])
+        );
 
         // Check and throw if not connected
         if (!$this->connected()) {
@@ -584,7 +583,7 @@ class Validator
             throw new NoMailFromException('Need MAIL FROM before RCPT TO');
         }
 
-        $valid = false;
+        $valid          = false;
         $expected_codes = [
             self::SMTP_GENERIC_SUCCESS,
             self::SMTP_USER_NOT_LOCAL
@@ -601,7 +600,7 @@ class Validator
             try {
                 $this->expect($expected_codes, $this->command_timeouts['rcpt']);
                 $this->state['rcpt'] = true;
-                $valid = true;
+                $valid               = true;
             } catch (UnexpectedResponseException $e) {
                 $this->debug('Unexpected response to RCPT TO: ' . $e->getMessage());
             }
@@ -645,7 +644,7 @@ class Validator
         if ($this->state['helo']) {
             $this->send('QUIT');
             $this->expect(
-                [self::SMTP_GENERIC_SUCCESS, self::SMTP_QUIT_SUCCESS],
+                [self::SMTP_GENERIC_SUCCESS,self::SMTP_QUIT_SUCCESS],
                 $this->command_timeouts['quit'],
                 true
             );
@@ -755,7 +754,7 @@ class Validator
     protected function expect($codes, $timeout = null, $empty_response_allowed = false)
     {
         if (!is_array($codes)) {
-            $codes = (array)$codes;
+            $codes = (array) $codes;
         }
 
         $code = null;
@@ -765,7 +764,7 @@ class Validator
             $line = $this->recv($timeout);
             $text = $line;
             while (preg_match('/^[0-9]+-/', $line)) {
-                $line = $this->recv($timeout);
+                $line  = $this->recv($timeout);
                 $text .= $line;
             }
             sscanf($line, '%d%s', $code, $text);
@@ -796,9 +795,9 @@ class Validator
      */
     protected function splitEmail($email)
     {
-        $parts = explode('@', $email);
+        $parts  = explode('@', $email);
         $domain = array_pop($parts);
-        $user = implode('@', $parts);
+        $user   = implode('@', $parts);
 
         return [$user, $domain];
     }
@@ -813,7 +812,7 @@ class Validator
     public function setEmails($emails)
     {
         if (!is_array($emails)) {
-            $emails = (array)$emails;
+            $emails = (array) $emails;
         }
 
         $this->domains = [];
@@ -836,8 +835,8 @@ class Validator
      */
     public function setSender($email)
     {
-        $parts = $this->splitEmail($email);
-        $this->from_user = $parts[0];
+        $parts             = $this->splitEmail($email);
+        $this->from_user   = $parts[0];
         $this->from_domain = $parts[1];
     }
 
@@ -849,7 +848,7 @@ class Validator
      */
     protected function mxQuery($domain)
     {
-        $hosts = [];
+        $hosts  = [];
         $weight = [];
         getmxrr($domain, $hosts, $weight);
 
@@ -940,7 +939,7 @@ class Validator
      * Compat for old lower_cased method calls.
      *
      * @param string $name
-     * @param array $args
+     * @param array  $args
      *
      * @return void
      */
@@ -963,7 +962,7 @@ class Validator
      */
     public function setConnectTimeout($timeout)
     {
-        $this->connect_timeout = (int)$timeout;
+        $this->connect_timeout = (int) $timeout;
     }
 
     /**
@@ -985,7 +984,7 @@ class Validator
      */
     public function setConnectPort($port)
     {
-        $this->connect_port = (int)$port;
+        $this->connect_port = (int) $port;
     }
 
     /**
@@ -1037,7 +1036,7 @@ class Validator
      */
     public function setCatchAllValidity($flag)
     {
-        $this->catchall_is_valid = (bool)$flag;
+        $this->catchall_is_valid = (bool) $flag;
     }
 
     /**

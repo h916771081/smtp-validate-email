@@ -3,6 +3,11 @@
     "description": "try make a composer package",
     "type": "library",
     "license": "MIT",
+	"support": {
+		"source": "https://github.com/zytzagoo/smtp-validate-email",
+		"docs": "https://github.com/zytzagoo/smtp-validate-email",
+		"issues": "https://github.com/zytzagoo/smtp-validate-email/issues"
+	},
 	"authors":[
 		{
 			"name":"h916771081",
@@ -13,9 +18,15 @@
     "require": {
 		"php":">=7.0"
 	},
-	"autoload":{
-		"psr-4":{
-			"SMTPValidateEmail\\Validator\\": "src/Validator"
+	"require-dev": {
+		"dealerdirect/phpcodesniffer-composer-installer": "^0.4.2",
+		"phpunit/phpunit": "~4.8|~5.1",
+		"squizlabs/php_codesniffer": "^3.0",
+		"wimg/php-compatibility": "^8.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"SMTPValidateEmail\\": "src"
 		}
 	}
 }
